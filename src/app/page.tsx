@@ -7,7 +7,7 @@ import  Testimonials from '@/components/home/Testimonials';
 
 export default function Home() {
   return (
-    <main>
+    <main className="pt-16"> {/* Add padding-top equal to navbar height */}
       <Navbar />
       <Hero />
       <Features />

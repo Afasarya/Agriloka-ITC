@@ -64,7 +64,7 @@ export default function Navbar() {
       initial="hidden"
       animate="visible"
       variants={navVariants}
-      className={`fixed w-full top-0 z-50 border-b ${
+      className={`fixed w-full top-0 z-[100] border-b ${  // Increase z-index
         isOpen 
           ? 'bg-background' 
           : 'bg-background/80 backdrop-blur-sm'

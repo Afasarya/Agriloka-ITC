@@ -61,7 +61,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="min-h-screen relative flex items-center pt-16 hero-section overflow-hidden">
+    <section className="min-h-[calc(100vh-4rem)] relative flex items-center pt-16 hero-section overflow-hidden">
       <ParallaxWrapper speed={0.2} className="absolute inset-0">
         <div className="bg-grid-pattern opacity-5 dark:opacity-10 w-full h-full" />
       </ParallaxWrapper>
