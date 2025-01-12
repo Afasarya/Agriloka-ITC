@@ -64,7 +64,11 @@ export default function Navbar() {
       initial="hidden"
       animate="visible"
       variants={navVariants}
-      className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-sm border-b"
+      className={`fixed w-full top-0 z-50 border-b ${
+        isOpen 
+          ? 'bg-background' 
+          : 'bg-background/80 backdrop-blur-sm'
+      }`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
@@ -158,26 +162,42 @@ export default function Navbar() {
             variants={menuVariants}
             className="fixed top-16 right-0 bottom-0 w-[280px] bg-background border-l shadow-xl md:hidden"
           >
-            <div className="flex flex-col p-4 space-y-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-foreground hover:text-primary py-2 font-medium"
+            <div className="flex flex-col p-6 h-full">
+              {/* Navigation Links */}
+              <div className="space-y-4">
+                {navLinks.map((link) => (
+                  <motion.div
+                    key={link.href}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link 
+                      href={link.href}
+                      className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="my-6 border-t" />
+
+              {/* Bottom Actions */}
+              <div className="space-y-4 mt-auto">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Ganti Tema</span>
+                  <ThemeToggle />
+                </div>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium text-center"
                   onClick={() => setIsOpen(false)}
                 >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="pt-4 border-t">
-                <ThemeToggle />
+                  Masuk
+                </motion.button>
               </div>
-              <button
-                className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                Masuk
-              </button>
             </div>
           </motion.div>
         )}
