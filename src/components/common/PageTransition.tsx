@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import { pageTransition } from "@/lib/animation";
 import { usePathname } from "next/navigation";
@@ -12,11 +12,11 @@ export default function PageTransition() {
   const logoRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isMounted) return;
 
     const overlay = overlayRef.current;
@@ -35,20 +35,17 @@ export default function PageTransition() {
 
   return (
     <>
-      {/* Black base layer */}
       <div 
         ref={overlayRef}
         className="fixed inset-0 bg-black"
         style={{ left: '-100%', zIndex: 999 }}
       />
       
-      {/* Green overlay with gradient */}
       <div 
         ref={secondaryOverlayRef}
         className="fixed inset-0 bg-gradient-to-r from-black/50 via-[hsl(142.1,76.2%,36.3%)] to-[hsl(142.1,76.2%,36.3%)] flex items-center justify-center"
         style={{ left: '-100%', zIndex: 1000, opacity: 0 }}
       >
-        {/* Logo container */}
         <div 
           ref={logoRef}
           className="fixed w-48 h-48"
