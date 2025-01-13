@@ -24,7 +24,7 @@ const communities: CommunityCard[] = [
     name: 'Petani Padi Modern',
     description: 'Komunitas petani padi yang menggunakan teknologi modern',
     members: 256,
-    thumbnail: '/communities/rice-farming.jpg',
+    thumbnail: '/images/community1.jpg',
     isJoined: false,
   },
   {
@@ -32,7 +32,7 @@ const communities: CommunityCard[] = [
     name: 'Sayuran Organik',
     description: 'Berbagi tips dan trik bertani sayuran organik',
     members: 189,
-    thumbnail: '/communities/organic-farming.jpg',
+    thumbnail: '/images/community3.jpg',
     isJoined: true,
   },
   // Add more communities...

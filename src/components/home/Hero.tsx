@@ -61,15 +61,15 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="min-h-[calc(100vh-4rem)] relative flex items-center pt-16 hero-section overflow-hidden">
+    <section className="min-h-[calc(100vh-4rem)] relative flex items-start pt-28 hero-section overflow-hidden"> {/* Changed items-center to items-start and increased pt-28 */}
       <ParallaxWrapper speed={0.2} className="absolute inset-0">
         <div className="bg-grid-pattern opacity-5 dark:opacity-10 w-full h-full" />
       </ParallaxWrapper>
       
-      <div className="container mx-auto px-4 relative">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-8 md:px-12 lg:px-16 relative"> {/* Increased padding */}
+        <div className="grid lg:grid-cols-2 gap-20 items-center max-w-7xl mx-auto"> {/* Increased gap from 16 to 20 */}
           <ParallaxWrapper speed={-0.2}>
-            <div className="hero-content space-y-6">
+            <div className="hero-content space-y-8 pl-6"> {/* Increased space-y and left padding */}
               <motion.h1 
                 className="text-4xl md:text-6xl font-bold leading-tight"
                 initial={{ opacity: 0, y: 20 }}
@@ -114,13 +114,19 @@ export default function Hero() {
                 className="absolute inset-0"
                 animate={floatingAnimation}
               >
-                <Image
-                  src="/hero-image.png" // Add your hero image
-                  alt="Agriloka Platform"
-                  fill
-                  className="object-contain"
-                  priority
-                />
+                <div className="relative w-full h-full p-4"> {/* Added padding */}
+                  <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-primary/20"> {/* Added styling wrapper */}
+                    <Image
+                      src="/images/herosection.jpg"
+                      alt="Agriloka Platform"
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-500"
+                      priority
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent" />
+                  </div>
+                </div>
               </motion.div>
               
               {/* Decorative elements */}

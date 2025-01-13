@@ -70,16 +70,17 @@ export default function Navbar() {
           : 'bg-background/80 backdrop-blur-sm'
       }`}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-8"> {/* Increased horizontal padding */}
+        <div className="flex items-center justify-between h-16"> {/* Increased from h-14 to h-16 */}
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center h-16 py-3 pl-4"> {/* Increased height to match container */}
             <Image
-              src="/logo.png"
+              src="/images/logoagriloka.png"
               alt="Agriloka Logo"
-              width={120}
-              height={40}
+              width={120}  // Reduced width further
+              height={120}  // Reduced height further
               className="object-contain"
+              priority
             />
           </Link>
 
@@ -101,8 +102,8 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop Right Section */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Right section with padding */}
+          <div className="flex items-center space-x-4 pr-4"> {/* Added right padding */}
             <ThemeToggle />
             <motion.button
               whileHover={{ scale: 1.05 }}

@@ -39,10 +39,10 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center mb-4">
               <Image
-                src="/logo.png"
+                src="/images/logoagriloka.png"
                 alt="Agriloka Logo"
-                width={150}
-                height={50}
+                width={120}
+                height={120}
                 className="object-contain"
               />
             </Link>

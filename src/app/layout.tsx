@@ -23,6 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+      <link rel="icon" href="/logofavicon.icon" sizes="any" />
+      </head>
       <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"

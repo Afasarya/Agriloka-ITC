@@ -52,7 +52,7 @@ export default function PageTransition() {
           style={{ zIndex: 1001, opacity: 0 }}
         >
           <Image
-            src="/logo.png"
+            src="/images/logoputih.png"
             alt="Agriloka"
             fill
             className="object-contain drop-shadow-2xl brightness-150"

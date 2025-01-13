@@ -22,7 +22,7 @@ const testimonials: Testimonial[] = [
     id: 1,
     name: "Pak Sudirman",
     role: "Petani Padi",
-    image: "/testimonials/farmer1.jpg",
+    image: "/images/testimonial1.jpg",
     content: "Agriloka membantu saya menemukan pembeli tetap untuk hasil panen. Penghasilan saya meningkat signifikan.",
     rating: 5,
     location: "Cianjur, Jawa Barat"
@@ -31,7 +31,7 @@ const testimonials: Testimonial[] = [
     id: 2,
     name: "Ibu Sumiati",
     role: "Petani Sayur",
-    image: "/testimonials/farmer2.jpg",
+    image: "/images/testimonial2.jpg",
     content: "AI Assistant sangat membantu saat tanaman saya bermasalah. Responnya cepat dan solusinya tepat.",
     rating: 5,
     location: "Malang, Jawa Timur"
@@ -40,7 +40,7 @@ const testimonials: Testimonial[] = [
     id: 3,
     name: "Pak Rahman",
     role: "Petani Buah",
-    image: "/testimonials/farmer3.jpg",
+    image: "/images/testimonial3.jpg",
     content: "Komunitas di Agriloka sangat supportif. Saya belajar banyak teknik bertani modern dari sesama petani.",
     rating: 5,
     location: "Batu, Jawa Timur"
