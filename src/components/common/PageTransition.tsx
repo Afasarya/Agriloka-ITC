@@ -24,9 +24,18 @@ export default function PageTransition() {
     const logo = logoRef.current;
 
     if (overlay && secondaryOverlay && logo) {
+      // Force immediate visibility
+      overlay.style.visibility = 'visible';
+      secondaryOverlay.style.visibility = 'visible';
+      logo.style.visibility = 'visible';
+
       const tl = pageTransition(overlay, secondaryOverlay, logo);
       return () => {
         tl.kill();
+        // Reset visibility on cleanup
+        overlay.style.visibility = 'hidden';
+        secondaryOverlay.style.visibility = 'hidden';
+        logo.style.visibility = 'hidden';
       };
     }
   }, [pathname, isMounted]);

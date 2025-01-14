@@ -1,11 +1,11 @@
 // src/components/chat/Chat.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence} from 'framer-motion';
+import { useState } from 'react'; // Remove useEffect
+import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, Sparkles } from 'lucide-react';
-import { gsap } from '@/lib/gsap';
-import ParallaxWrapper from '@/components/common/ParallaxWrapper';
+
+// ... interfaces and recommendations stay the same
 
 interface Message {
   id: string;
@@ -42,44 +42,10 @@ const recommendations: Recommendation[] = [
   },
 ];
 
-// Removed unused TypingAnimation component
-
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-
-  useEffect(() => {
-    // Initial animation
-    gsap.from(".chat-header", {
-      y: -50,
-      opacity: 0,
-      duration: 1,
-      ease: "power3.out",
-    });
-
-    gsap.from(".recommendation-card", {
-      scrollTrigger: {
-        trigger: ".recommendations",
-        start: "top center+=100",
-      },
-      y: 50,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.2,
-    });
-  }, []);
-
-  const scrollToBottom = () => {
-    const chatContainer = document.querySelector('.chat-container');
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -111,31 +77,20 @@ export default function Chat() {
   return (
     <section className="min-h-screen py-16">
       <div className="container mx-auto px-4">
-        {/* Header */}
-        <ParallaxWrapper>
-          <motion.div 
-            className="chat-header text-center mb-12 relative"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-          >
-            {/* Gradient background */}
-            <div className="absolute -z-10 inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 blur-3xl" />
-            
-            <motion.div
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 1 }}
-              className="inline-block"
-            >
-              <Sparkles className="w-12 h-12 text-primary mb-4" />
-            </motion.div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-              Yuk Tanya dengan AI Agriloka
-            </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Dapatkan jawaban cepat dan akurat untuk pertanyaan seputar pertanian Anda
-            </p>
-          </motion.div>
-        </ParallaxWrapper>
+        {/* Header - No initial animation */}
+        <div className="chat-header text-center mb-12 relative opacity-100">
+          <div className="absolute -z-10 inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 blur-3xl" />
+          
+          <div className="inline-block">
+            <Sparkles className="w-12 h-12 text-primary mb-4" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            Yuk Tanya dengan AI Agriloka
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            Dapatkan jawaban cepat dan akurat untuk pertanyaan seputar pertanian Anda
+          </p>
+        </div>
 
         {/* Chat Interface */}
         <div className="max-w-3xl mx-auto mb-16 relative">
@@ -251,39 +206,23 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* Recommendations */}
-        <div className="recommendations">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Rekomendasi Pertanyaan</h2>
+        {/* Recommendations - No initial animation */}
+        <div className="recommendations mb-16 opacity-100">
+          <h2 className="text-2xl font-semibold mb-6 text-center text-foreground">
+            Rekomendasi Pertanyaan
+          </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recommendations.map((rec) => (
-              <motion.div
+              <div
                 key={rec.id}
-                className="recommendation-card relative overflow-hidden"
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="recommendation-card bg-card rounded-lg border p-6 hover:shadow-lg transition-all"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/20 opacity-50" />
-                <div className="relative p-6 bg-card/80 backdrop-blur-sm rounded-lg border hover:shadow-lg transition-all">
-                  <div className="flex items-center mb-4">
-                    <motion.div 
-                      className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/10"
-                      whileHover={{ 
-                        scale: 1.1,
-                        rotate: 5,
-                      }}
-                      transition={{ 
-                        type: "spring", 
-                        stiffness: 400, 
-                        damping: 25 
-                      }}
-                    >
-                      <span className="text-2xl">{rec.icon}</span>
-                    </motion.div>
-                  </div>
-                  <h3 className="font-semibold mb-2">{rec.title}</h3>
-                  <p className="text-muted-foreground text-sm">{rec.description}</p>
+                <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/10 mb-4">
+                  <span className="text-2xl">{rec.icon}</span>
                 </div>
-              </motion.div>
+                <h3 className="font-semibold mb-2 text-foreground">{rec.title}</h3>
+                <p className="text-muted-foreground text-sm">{rec.description}</p>
+              </div>
             ))}
           </div>
         </div>
