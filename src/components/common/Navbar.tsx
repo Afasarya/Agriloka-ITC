@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
+  { href: "/ai", label: "Agriloka AI" },
   { href: "/market", label: "Pasar" },
   { href: "/community", label: "Komunitas" },
   { href: "/education", label: "Edukasi" },
