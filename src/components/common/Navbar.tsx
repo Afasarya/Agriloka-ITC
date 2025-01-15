@@ -5,6 +5,8 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ToggleMode";
 import { useState, useEffect } from "react";
+import { ShoppingCart } from "lucide-react"; // Add this import
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -36,6 +38,7 @@ const menuVariants = {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -103,12 +106,22 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right section with padding */}
-          <div className="flex items-center space-x-4 pr-4"> {/* Added right padding */}
+          {/* Desktop Right Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/cart">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 rounded-md hover:bg-accent"
+              >
+                <ShoppingCart className="w-5 h-5" />
+              </motion.button>
+            </Link>
             <ThemeToggle />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => router.push('/login')}
               className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium"
             >
               Masuk
@@ -116,40 +129,51 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            id="menu-button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2"
-            aria-label="Toggle menu"
-            aria-expanded={isOpen}
-          >
-            <motion.div
-              className="w-6 h-5 flex flex-col justify-between"
-              animate={isOpen ? "open" : "closed"}
+          <div className="md:hidden flex items-center space-x-4">
+            <Link href="/cart">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 rounded-md hover:bg-accent"
+              >
+                <ShoppingCart className="w-5 h-5" />
+              </motion.button>
+            </Link>
+            <button
+              id="menu-button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2"
+              aria-label="Toggle menu"
+              aria-expanded={isOpen}
             >
-              <motion.span
-                className="w-full h-0.5 bg-foreground rounded-full origin-left"
-                variants={{
-                  closed: { rotate: 0 },
-                  open: { rotate: 45, y: -2 }
-                }}
-              />
-              <motion.span
-                className="w-full h-0.5 bg-foreground rounded-full"
-                variants={{
-                  closed: { opacity: 1 },
-                  open: { opacity: 0 }
-                }}
-              />
-              <motion.span
-                className="w-full h-0.5 bg-foreground rounded-full origin-left"
-                variants={{
-                  closed: { rotate: 0 },
-                  open: { rotate: -45, y: 2 }
-                }}
-              />
-            </motion.div>
-          </button>
+              <motion.div
+                className="w-6 h-5 flex flex-col justify-between"
+                animate={isOpen ? "open" : "closed"}
+              >
+                <motion.span
+                  className="w-full h-0.5 bg-foreground rounded-full origin-left"
+                  variants={{
+                    closed: { rotate: 0 },
+                    open: { rotate: 45, y: -2 }
+                  }}
+                />
+                <motion.span
+                  className="w-full h-0.5 bg-foreground rounded-full"
+                  variants={{
+                    closed: { opacity: 1 },
+                    open: { opacity: 0 }
+                  }}
+                />
+                <motion.span
+                  className="w-full h-0.5 bg-foreground rounded-full origin-left"
+                  variants={{
+                    closed: { rotate: 0 },
+                    open: { rotate: -45, y: 2 }
+                  }}
+                />
+              </motion.div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -195,7 +219,10 @@ export default function Navbar() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium text-center"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push('/login');
+                  }}
                 >
                   Masuk
                 </motion.button>

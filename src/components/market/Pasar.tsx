@@ -200,7 +200,7 @@ export default function Pasar() {
         {/* Banner Section */}
         <div className="mb-12 relative rounded-2xl overflow-hidden h-[300px]">
           <Image
-            src="/images/banner-market.jpg"
+            src="/images/banner1love.png"
             alt="Marketplace Banner"
             fill
             className="object-cover"
