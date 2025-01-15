@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Globe, Image as ImageIcon, Mic, X, Sparkles } from 'lucide-react';
@@ -7,6 +8,13 @@ import { AIService } from '@/services/ai';
 import { SearchResult } from '@/types/ai';
 import Image from 'next/image';
 import { ImageDialog } from './ImageDialog';
+=======
+import { useState } from 'react'; // Remove useEffect
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Bot, Sparkles } from 'lucide-react';
+
+// ... interfaces and recommendations stay the same
+>>>>>>> 6b50390109415ef786d0201c1df693c051c1668d
 
 interface Message {
   id: string;
@@ -272,6 +280,26 @@ export default function Chat() {
         {/* Header - No initial animation */}
         <div className="chat-header text-center mb-12 relative opacity-100">
           <div className="absolute -z-10 inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 blur-3xl" />
+<<<<<<< HEAD
+=======
+          
+          <div className="inline-block">
+            <Sparkles className="w-12 h-12 text-primary mb-4" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            Yuk Tanya dengan AI Agriloka
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            Dapatkan jawaban cepat dan akurat untuk pertanyaan seputar pertanian Anda
+          </p>
+        </div>
+
+        {/* Chat Interface */}
+        <div className="max-w-3xl mx-auto mb-16 relative">
+          {/* Floating gradient circles */}
+          <div className="absolute -z-10 top-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-blob" />
+          <div className="absolute -z-10 bottom-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-blob animation-delay-2000" />
+>>>>>>> 6b50390109415ef786d0201c1df693c051c1668d
           
           <div className="inline-block">
             <Sparkles className="w-12 h-12 text-primary mb-4" />
@@ -426,39 +454,23 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* Recommendations */}
-        <div className="recommendations">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Rekomendasi Pertanyaan</h2>
+        {/* Recommendations - No initial animation */}
+        <div className="recommendations mb-16 opacity-100">
+          <h2 className="text-2xl font-semibold mb-6 text-center text-foreground">
+            Rekomendasi Pertanyaan
+          </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recommendations.map((rec) => (
-              <motion.div
+              <div
                 key={rec.id}
-                className="recommendation-card relative overflow-hidden"
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="recommendation-card bg-card rounded-lg border p-6 hover:shadow-lg transition-all"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/20 opacity-50" />
-                <div className="relative p-6 bg-card/80 backdrop-blur-sm rounded-lg border hover:shadow-lg transition-all">
-                  <div className="flex items-center mb-4">
-                    <motion.div 
-                      className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/10"
-                      whileHover={{ 
-                        scale: 1.1,
-                        rotate: 5,
-                      }}
-                      transition={{ 
-                        type: "spring", 
-                        stiffness: 400, 
-                        damping: 25 
-                      }}
-                    >
-                      <span className="text-2xl">{rec.icon}</span>
-                    </motion.div>
-                  </div>
-                  <h3 className="font-semibold mb-2">{rec.title}</h3>
-                  <p className="text-muted-foreground text-sm">{rec.description}</p>
+                <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-primary/10 mb-4">
+                  <span className="text-2xl">{rec.icon}</span>
                 </div>
-              </motion.div>
+                <h3 className="font-semibold mb-2 text-foreground">{rec.title}</h3>
+                <p className="text-muted-foreground text-sm">{rec.description}</p>
+              </div>
             ))}
           </div>
         </div>

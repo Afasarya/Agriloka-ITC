@@ -1,13 +1,13 @@
 import Navbar from '@/components/common/Navbar';
-import Market from '@/components/market/Pasar';
+import DetailProduct from '@/components/market/ProductDetail';
 import Footer from '@/components/common/Footer';
 
 
-export default function pasar() {
+export default function ProductDetailPage() {
   return (
     <main className="pt-16"> {/* Add padding-top equal to navbar height */}
       <Navbar />
-      <Market />
+        <DetailProduct/>
       <Footer />
     </main>
   );
