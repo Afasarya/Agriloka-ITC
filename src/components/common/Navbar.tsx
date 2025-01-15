@@ -79,7 +79,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center h-16 py-3 pl-4"> {/* Increased height to match container */}
             <Image
-              src="/images/logoagriloka.png"
+              src="/images/logofix.png"
               alt="Agriloka Logo"
               width={120}  // Reduced width further
               height={120}  // Reduced height further

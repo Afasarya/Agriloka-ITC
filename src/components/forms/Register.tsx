@@ -79,7 +79,7 @@ export default function Register() {
           <div className="text-center mb-8">
             <div className="lg:hidden mb-6">
               <Image
-                src="/logo.png"
+                src="/images/logoagriloka.png"
                 alt="Agriloka"
                 width={120}
                 height={40}
