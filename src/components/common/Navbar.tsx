@@ -108,7 +108,7 @@ export default function Navbar() {
 
           {/* Desktop Right Section */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/cart">
+            <Link href="/market/cart">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
