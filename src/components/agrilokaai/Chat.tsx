@@ -342,7 +342,7 @@ export default function Chat() {
                 </div>
               )}
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   value={input}
@@ -352,7 +352,7 @@ export default function Chat() {
                   className="flex-1 px-4 py-2.5 rounded-xl bg-background/50 border"
                 />
 
-                <div className="flex gap-2">
+                <div className="flex justify-end gap-2">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
