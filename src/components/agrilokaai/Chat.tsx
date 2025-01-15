@@ -86,6 +86,7 @@ export default function Chat() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('');
   const [showImageDialog, setShowImageDialog] = useState(false);
+  const [apiError, setApiError] = useState(false);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -114,7 +115,12 @@ export default function Chat() {
         setIsTyping(true);
 
         try {
-          const response = await AIService.analyzeImage(base64String);
+          const response = await AIService.analyzeImage(base64String).catch(err => {
+            console.error('Image analysis API error:', err);
+            setApiError(true);
+            return { description: 'Maaf, layanan analisis gambar sedang tidak tersedia. Silakan coba lagi nanti.' };
+          });
+          
           setMessages(prev => [...prev, {
             id: (Date.now() + 1).toString(),
             type: 'bot',
@@ -123,6 +129,7 @@ export default function Chat() {
           }]);
         } catch (error) {
           console.error('Image analysis error:', error);
+          setApiError(true);
           setMessages(prev => [...prev, {
             id: (Date.now() + 1).toString(),
             type: 'bot',
@@ -139,6 +146,7 @@ export default function Chat() {
       reader.readAsDataURL(selectedImage);
     } catch (error) {
       console.error('File upload error:', error);
+      setApiError(true);
     }
   };
 
@@ -178,7 +186,12 @@ export default function Chat() {
 
     try {
       if (searchEnabled) {
-        const response = await AIService.getSearchEnhancedResponse(input);
+        const response = await AIService.getSearchEnhancedResponse(input).catch(err => {
+          console.error('Search API error:', err);
+          setApiError(true);
+          return { message: 'Maaf, layanan AI sedang tidak tersedia. Silakan coba lagi nanti.', sources: [] };
+        });
+        
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'bot',
@@ -190,7 +203,12 @@ export default function Chat() {
       } else {
         const response = await AIService.getChatCompletion([
           { role: 'user', content: input }
-        ]);
+        ]).catch(err => {
+          console.error('Chat API error:', err);
+          setApiError(true);
+          return 'Maaf, layanan AI sedang tidak tersedia. Silakan coba lagi nanti.';
+        });
+        
         const botMessage: Message = {
           id: (Date.now() + 1).toString(),
           type: 'bot',
@@ -201,6 +219,7 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('AI response error:', error);
+      setApiError(true);
     } finally {
       setIsTyping(false);
     }
@@ -214,7 +233,12 @@ export default function Chat() {
     </div>
   );
 
-  // ... existing useEffect and scrollToBottom functions ...
+  // Show error alert when API key is missing
+  useEffect(() => {
+    if (apiError) {
+      alert('Beberapa fitur mungkin tidak berfungsi karena konfigurasi API tidak lengkap. Silakan hubungi administrator.');
+    }
+  }, [apiError]);
 
   return (
     <section className="min-h-screen py-16">

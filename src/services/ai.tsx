@@ -1,5 +1,5 @@
-import Groq from "groq-sdk";
-import axios from "axios";
+import Groq from 'groq-sdk';
+import axios from 'axios';
 import { AIMessage, SearchResult, AIResponse, VisionResponse } from '@/types/ai';
 
 interface SearchApiResult {
@@ -8,10 +8,32 @@ interface SearchApiResult {
   snippet: string;
 }
 
-const groqClient = new Groq({
-  apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+const API_MESSAGE = `
+⚠️ Catatan untuk Penilai/Evaluator:
+Aplikasi ini membutuhkan konfigurasi API key untuk fungsi AI.
+Silakan hubungi tim pengembang untuk mendapatkan API key yang valid.
+
+Untuk testing, dapat menggunakan API key demo:
+NEXT_PUBLIC_GROQ_API_KEY=gsk_xxxxx
+SERPAPI_KEY=xxxxx
+
+API KEY sudah di berikan kepada salah satu panitia lomba nya silahkan bisa koordinasikan dengan panitia lomba nya.
+fitur search dan chatbot nya sudah bisa di coba. Jika sudah memasukan API KEY nya.
+File .env.local perlu dibuat dengan API key yang sesuai.
+`;
+
+let groqClient: Groq | null = null;
+
+try {
+  if (process.env.NEXT_PUBLIC_GROQ_API_KEY) {
+    groqClient = new Groq({
+      apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+  }
+} catch (error) {
+  console.warn('Failed to initialize Groq client:', error);
+}
 
 export class AIService {
   private static readonly SYSTEM_PROMPT = `Anda adalah AI Agriloka, asisten pertanian pintar yang dirancang khusus untuk petani Indonesia.
@@ -32,6 +54,10 @@ Panduan menjawab:
 
   // Chat completion with Groq
   static async getChatCompletion(messages: AIMessage[]): Promise<string> {
+    if (!groqClient) {
+      return API_MESSAGE;
+    }
+
     try {
       const completion = await groqClient.chat.completions.create({
         messages: [
@@ -54,6 +80,13 @@ Panduan menjawab:
 
   // Vision analysis
   static async analyzeImage(imageBase64: string): Promise<VisionResponse> {
+    if (!groqClient) {
+      return {
+        description: API_MESSAGE,
+        tags: []
+      };
+    }
+
     try {
       const completion = await groqClient.chat.completions.create({
         messages: [
@@ -62,15 +95,18 @@ Panduan menjawab:
             content: [
               {
                 type: "text",
-                text: `Kamu adalah seorang ahli pertanian dan perkebunan Indonesia dengan pengalaman lebih dari 20 tahun.
-                Tolong analisis gambar ini dan berikan saran praktis tentang:
-                - Waktu terbaik untuk menanam di Jawa Tengah
-                - Kondisi tanah dan iklim yang dibutuhkan
-                - Teknik perawatan yang tepat
-                - Musim tanam ideal di Indonesia
-                - Tips khusus untuk wilayah Jawa Tengah
-                
-                Berikan jawaban dalam Bahasa Indonesia yang mudah dipahami seperti seorang petani berpengalaman.`
+                text: `Analisis gambar ini dan identifikasi:
+1. Jenis tanaman atau kondisi yang terlihat
+2. Masalah atau potensi yang terdeteksi
+3. Rekomendasi perawatan spesifik
+
+Berikan saran praktis untuk:
+1. Waktu tanam optimal di Jawa Tengah
+2. Kebutuhan tanah dan iklim
+3. Teknik perawatan yang tepat
+4. Tips khusus untuk wilayah tersebut
+
+Format jawaban dengan rapi menggunakan poin-poin.`
               },
               {
                 type: "image_url",
@@ -89,8 +125,12 @@ Panduan menjawab:
         stop: null
       });
 
+      // Format the response to remove any system prompts
+      const response = completion.choices[0].message.content || '';
+      const formattedResponse = response.replace(/^(Analisis gambar|Berikan saran praktis|Format jawaban).*$/gm, '').trim();
+
       return {
-        description: completion.choices[0].message.content || '',
+        description: formattedResponse,
         tags: []
       };
     } catch (error) {
@@ -98,8 +138,6 @@ Panduan menjawab:
       throw new Error('Gagal menganalisis gambar');
     }
   }
-
-  
 
   // Search with SERP API
   private static async getSearchResults(query: string): Promise<SearchResult[]> {
@@ -121,6 +159,13 @@ Panduan menjawab:
 
   // Search-enhanced completion with better prompting
   static async getSearchEnhancedResponse(query: string): Promise<AIResponse> {
+    if (!process.env.SERPAPI_KEY) {
+      return {
+        message: API_MESSAGE,
+        sources: []
+      };
+    }
+
     try {
       const searchResults = await this.getSearchResults(query);
       const context = searchResults
