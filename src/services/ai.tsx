@@ -1,6 +1,12 @@
 import Groq from "groq-sdk";
 import axios from "axios";
-import { AIMessage, SearchResult, AIResponse, VisionResponse, AudioResponse } from '@/types/ai';
+import { AIMessage, SearchResult, AIResponse, VisionResponse } from '@/types/ai';
+
+interface SearchApiResult {
+  title: string;
+  link: string;
+  snippet: string;
+}
 
 const groqClient = new Groq({
   apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
@@ -8,19 +14,38 @@ const groqClient = new Groq({
 });
 
 export class AIService {
+  private static readonly SYSTEM_PROMPT = `Anda adalah AI Agriloka, asisten pertanian pintar yang dirancang khusus untuk petani Indonesia.
+Latar belakang: Agriloka adalah platform digital inovatif yang membantu petani Indonesia dengan teknologi modern untuk:
+- Pengelolaan lahan dan analisis tanah
+- Prediksi cuaca dan perencanaan pertanian
+- Identifikasi hama dan penyakit tanaman
+- Akses pasar dan informasi pertanian terkini
+
+Panduan menjawab:
+1. Berikan jawaban praktis dan mudah diterapkan
+2. Fokus pada konteks pertanian Indonesia, terutama kondisi lokal
+3. Utamakan solusi yang berkelanjutan dan ramah lingkungan
+4. Gunakan bahasa yang sederhana dan mudah dipahami petani
+5. Sertakan tips implementasi dan praktik terbaik
+6. Dukung SDGs terutama untuk kesejahteraan petani
+`;
+
   // Chat completion with Groq
   static async getChatCompletion(messages: AIMessage[]): Promise<string> {
     try {
       const completion = await groqClient.chat.completions.create({
-        messages,
+        messages: [
+          { role: 'system', content: this.SYSTEM_PROMPT },
+          ...messages
+        ],
         model: "llama-3.3-70b-versatile",
-        temperature: 1,
+        temperature: 0.7, // Reduced for more consistent responses
         max_tokens: 1024,
         top_p: 1,
         stream: false,
         stop: null
       });
-      return completion.choices[0].message.content;
+      return completion.choices[0].message.content || '';
     } catch (error) {
       console.error('Chat Error:', error);
       throw new Error('Failed to get AI response');
@@ -65,7 +90,7 @@ export class AIService {
       });
 
       return {
-        description: completion.choices[0].message.content,
+        description: completion.choices[0].message.content || '',
         tags: []
       };
     } catch (error) {
@@ -74,6 +99,8 @@ export class AIService {
     }
   }
 
+  
+
   // Search with SERP API
   private static async getSearchResults(query: string): Promise<SearchResult[]> {
     try {
@@ -81,7 +108,7 @@ export class AIService {
         params: { q: query }
       });
 
-      return response.data.organic_results.map((result: any) => ({
+      return response.data.organic_results.map((result: SearchApiResult) => ({
         title: result.title,
         link: result.link,
         snippet: result.snippet
@@ -92,7 +119,7 @@ export class AIService {
     }
   }
 
-  // Search-enhanced completion
+  // Search-enhanced completion with better prompting
   static async getSearchEnhancedResponse(query: string): Promise<AIResponse> {
     try {
       const searchResults = await this.getSearchResults(query);
@@ -101,7 +128,21 @@ export class AIService {
         .map(result => `${result.title}\n${result.snippet}`)
         .join('\n\n');
       
-      const aiPrompt = `Based on these search results:\n\n${context}\n\nQuery: ${query}\n\nResponse:`;
+      const aiPrompt = `Berdasarkan hasil pencarian berikut:
+
+${context}
+
+Pertanyaan: ${query}
+
+Berikan jawaban yang:
+1. Sesuai dengan konteks pertanian Indonesia
+2. Praktis dan bisa langsung diterapkan
+3. Mempertimbangkan kondisi lokal dan keberlanjutan
+4. Mendukung kesejahteraan petani sesuai SDGs
+5. Menggunakan bahasa yang sederhana dan mudah dipahami
+
+Jawaban:`;
+
       const aiResponse = await this.getChatCompletion([
         { role: 'user', content: aiPrompt }
       ]);
@@ -113,27 +154,6 @@ export class AIService {
     } catch (error) {
       console.error('Search Enhanced Response Error:', error);
       throw new Error('Failed to get search-enhanced response');
-    }
-  }
-
-  // Audio transcription
-  static async transcribeAudio(audioBlob: Blob): Promise<AudioResponse> {
-    try {
-      const formData = new FormData();
-      formData.append('file', audioBlob);
-
-      const transcription = await groqClient.audio.transcriptions.create({
-        file: audioBlob,
-        model: "whisper-large-v3-turbo",
-        response_format: "verbose_json"
-      });
-
-      return {
-        transcript: transcription.text
-      };
-    } catch (error) {
-      console.error('Audio Error:', error);
-      throw new Error('Failed to transcribe audio');
     }
   }
 }

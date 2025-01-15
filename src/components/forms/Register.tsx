@@ -54,7 +54,7 @@ export default function Register() {
               transition={{ delay: 0.2 }}
             >
               <Image
-                src="/logo.png"
+                src="/images/logofix.png"
                 alt="Agriloka"
                 width={200}
                 height={60}

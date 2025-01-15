@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Globe, Image as ImageIcon, Mic, X, Sparkles } from 'lucide-react';
+import { Send, Globe, Image as ImageIcon, X, Sparkles } from 'lucide-react';
 import { AIService } from '@/services/ai';
 import { SearchResult } from '@/types/ai';
 import Image from 'next/image';
@@ -46,16 +45,44 @@ const recommendations: Recommendation[] = [
   },
 ];
 
+const formatBotMessage = (text: string) => {
+  // Handle numbered lists (1. 2. 3. etc)
+  text = text.replace(/^\d+\.\s/gm, '<br>• ');
+  
+  // Handle bullet points
+  text = text.replace(/^[-•]\s/gm, '• ');
+  
+  // Handle bold text
+  text = text.replace(/\*([^*]+)\*/g, '<strong>$1</strong>');
+  
+  // Add spacing between sections
+  text = text.replace(/\n\n/g, '<br><br>');
+  
+  // Split into paragraphs
+  const paragraphs = text.split('<br><br>').filter(p => p.trim());
+  
+  return paragraphs.map((paragraph, index) => (
+    <p 
+      key={index} 
+      className={`mb-3 ${
+        paragraph.startsWith('•') 
+          ? 'ml-4 list-item' 
+          : paragraph.includes('<strong>') 
+            ? 'font-medium' 
+            : ''
+      }`}
+      dangerouslySetInnerHTML={{ __html: paragraph }}
+    />
+  ));
+};
+
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('');
   const [showImageDialog, setShowImageDialog] = useState(false);
@@ -134,84 +161,6 @@ export default function Chat() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = (reader.result as string).split(',')[1];
-        
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          type: 'user',
-          content: 'Mohon analisis gambar ini',
-          timestamp: new Date(),
-          imageUrl: URL.createObjectURL(file)
-        }]);
-        setIsTyping(true);
-
-        try {
-          const response = await AIService.analyzeImage(base64String);
-          setMessages(prev => [...prev, {
-            id: (Date.now() + 1).toString(),
-            type: 'bot',
-            content: response.description,
-            timestamp: new Date()
-          }]);
-        } catch (error) {
-          console.error('Image analysis error:', error);
-          setMessages(prev => [...prev, {
-            id: (Date.now() + 1).toString(),
-            type: 'bot',
-            content: 'Maaf, terjadi kesalahan saat menganalisis gambar',
-            timestamp: new Date()
-          }]);
-        } finally {
-          setIsTyping(false);
-          setShowImageUpload(false);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('File upload error:', error);
-    }
-  };
-
-  const handleVoiceToggle = async () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
-      setIsRecording(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          audioChunksRef.current.push(event.data);
-        };
-
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current);
-          try {
-            const response = await AIService.transcribeAudio(audioBlob);
-            setInput(response.transcript);
-          } catch (error) {
-            console.error('Audio transcription error:', error);
-          }
-        };
-
-        mediaRecorder.start();
-        setIsRecording(true);
-      } catch (error) {
-        console.error('Voice recording error:', error);
-      }
-    }
-  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -299,20 +248,26 @@ export default function Chat() {
                       message.type === 'user' ? 'flex-row-reverse' : 'flex-row'
                     }`}
                   >
-                    <div className={`max-w-[70%] rounded-2xl p-3.5 ${
-                      message.type === 'user' ? 'bg-primary text-white' : 'bg-muted'
+                    <div className={`max-w-[70%] rounded-2xl p-4 ${
+                      message.type === 'user' ? 'bg-primary text-white' : 'bg-muted/50'
                     }`}>
                       {message.imageUrl && (
-                        <div className="relative w-full h-48 mb-2">
+                        <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
                           <Image 
                             src={message.imageUrl}
                             alt="Uploaded"
                             fill
-                            className="rounded-lg object-cover"
+                            className="object-cover"
                           />
                         </div>
                       )}
-                      {message.content}
+                      {message.type === 'bot' ? (
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          {formatBotMessage(message.content)}
+                        </div>
+                      ) : (
+                        message.content
+                      )}
                       
                       {message.sources && (
                         <div className="mt-2 pt-2 border-t border-muted-foreground/20">
@@ -392,17 +347,6 @@ export default function Chat() {
                     className="p-2.5 rounded-xl bg-muted"
                   >
                     <ImageIcon className="w-5 h-5" />
-                  </motion.button>
-
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleVoiceToggle}
-                    className={`p-2.5 rounded-xl transition-all ${
-                      isRecording ? 'bg-red-500 text-white' : 'bg-muted'
-                    }`}
-                  >
-                    <Mic className="w-5 h-5" />
                   </motion.button>
 
                   <motion.button
