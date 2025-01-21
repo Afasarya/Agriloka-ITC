@@ -159,34 +159,26 @@ Format jawaban dengan rapi menggunakan poin-poin.`
 
   // Search-enhanced completion with better prompting
   static async getSearchEnhancedResponse(query: string): Promise<AIResponse> {
-    if (!process.env.SERPAPI_KEY) {
-      return {
-        message: API_MESSAGE,
-        sources: []
-      };
-    }
-
     try {
       const searchResults = await this.getSearchResults(query);
+      
+      // If no results, return early
+      if (!searchResults || searchResults.length === 0) {
+        return {
+          message: "Maaf, tidak dapat menemukan hasil pencarian yang relevan.",
+          sources: []
+        };
+      }
+
       const context = searchResults
         .slice(0, 5)
         .map(result => `${result.title}\n${result.snippet}`)
         .join('\n\n');
       
       const aiPrompt = `Berdasarkan hasil pencarian berikut:
-
-${context}
-
-Pertanyaan: ${query}
-
-Berikan jawaban yang:
-1. Sesuai dengan konteks pertanian Indonesia
-2. Praktis dan bisa langsung diterapkan
-3. Mempertimbangkan kondisi lokal dan keberlanjutan
-4. Mendukung kesejahteraan petani sesuai SDGs
-5. Menggunakan bahasa yang sederhana dan mudah dipahami
-
-Jawaban:`;
+      ${context}
+      Pertanyaan: ${query}
+      ...`;
 
       const aiResponse = await this.getChatCompletion([
         { role: 'user', content: aiPrompt }

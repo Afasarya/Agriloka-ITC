@@ -5,8 +5,10 @@ export async function GET(request: Request) {
   const query = searchParams.get('q');
   const apiKey = process.env.SERPAPI_KEY;
 
-  console.log('Query:', query);
-  console.log('API Key exists:', !!apiKey);
+  console.log('Search API Debug:');
+  console.log('- Query:', query);
+  console.log('- API Key exists:', !!apiKey);
+  console.log('- API Key length:', apiKey?.length);
 
   if (!query) {
     return NextResponse.json({ error: 'Query is required' }, { status: 400 });
