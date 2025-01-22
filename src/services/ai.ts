@@ -290,27 +290,36 @@ Format jawaban dengan rapi menggunakan poin-poin.`
       })
       .filter(Boolean) as string[];
   
-    // Better temperature parsing
+    // Improved temperature parsing function
     const findTemperature = (text: string): number | null => {
-      // Try to find temperature in format "XX°C" or "XX-YY°C"
-      const matches = [
-        // Look for "Semarang" followed by temperature
-        /Semarang[^0-9]*(\d+)\s*°C/i,
-        // Look for explicit temperature mentions
-        /suhu[^0-9]*(\d+)\s*°C/i,
-        /temperature[^0-9]*(\d+)\s*°C/i,
-        // General temperature patterns
-        /(\d+)\s*°C/i,
-        // Last resort: any number followed by C
-        /(\d+)C/i
+      const patterns = [
+        // Match temperature range and take the average
+        {
+          regex: /(\d+)\s*[-–]\s*(\d+)\s*°C/g,
+          extract: (match: RegExpMatchArray) => {
+            const low = parseInt(match[1]);
+            const high = parseInt(match[2]);
+            return Math.round((low + high) / 2);
+          }
+        },
+        // Match exact temperature with °C
+        {
+          regex: /(?:suhu|temperature|temp)[^0-9]*(\d+)\s*°C/i,
+          extract: (match: RegExpMatchArray) => parseInt(match[1])
+        },
+        // Match RealFeel or actual temperature
+        {
+          regex: /(?:RealFeel®|actual)[^0-9]*(\d+)°/i,
+          extract: (match: RegExpMatchArray) => parseInt(match[1])
+        }
       ];
   
-      for (const regex of matches) {
-        const match = text.match(regex);
-        if (match) {
-          const temp = parseInt(match[1]);
-          // Validate temperature is reasonable (0-50°C)
-          if (temp >= 0 && temp <= 50) {
+      for (const pattern of patterns) {
+        const matches = Array.from(text.matchAll(pattern.regex));
+        for (const match of matches) {
+          const temp = pattern.extract(match);
+          // Validate temperature is reasonable for Indonesia (10-40°C)
+          if (temp >= 10 && temp <= 40) {
             return temp;
           }
         }
@@ -318,11 +327,17 @@ Format jawaban dengan rapi menggunakan poin-poin.`
       return null;
     };
   
-    // Search for temperature in both response and search results
-    const temperature = 
-      findTemperature(response) || 
-      findTemperature(sources.map(s => s.snippet).join(' ')) || 
-      30; // Default to 30°C for Semarang if no valid temperature found
+    // First try to find temperature in weather search results
+    const weatherText = sources
+      .filter(s => s.snippet.toLowerCase().includes('°c') || 
+                  s.snippet.toLowerCase().includes('suhu') ||
+                  s.snippet.toLowerCase().includes('temperature'))
+      .map(s => s.snippet)
+      .join(' ');
+  
+    const temperature = findTemperature(weatherText) || 
+                       findTemperature(response) || 
+                       28; // Default only if no valid temperature found
   
     // Rest of the implementation
     const recommendedCrops = (cropNamesFromResponse?.length >= 5 ? 
