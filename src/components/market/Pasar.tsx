@@ -3,10 +3,9 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ChevronDown, Star } from 'lucide-react';
+import { Search, ChevronDown, Star, ShoppingCart, Package, Truck, Tag, Sprout } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import ParallaxWrapper from '@/components/common/ParallaxWrapper';
 
 const categories = {
   'Semua': ['Semua Produk'],
@@ -112,20 +111,104 @@ export default function Pasar() {
   );
 
   return (
-    <section className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        {/* Hero Section */}
-        <ParallaxWrapper>
-          <div className="text-center mb-16 relative">
-            <div className="absolute -z-10 inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 blur-3xl" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+    <section className="min-h-screen">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-primary/5 to-transparent py-24">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+          <motion.div
+            className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute -bottom-20 -left-20 w-72 h-72 bg-primary/15 rounded-full blur-3xl"
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.5, 0.3, 0.5],
+            }}
+            transition={{ duration: 8, repeat: Infinity, delay: 1 }}
+          />
+        </div>
+
+        {/* Floating Icons */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute top-20 right-[20%]"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Package className="w-12 h-12 text-primary/20" />
+          </motion.div>
+          <motion.div
+            className="absolute bottom-20 left-[15%]"
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Sprout className="w-16 h-16 text-primary/15" />
+          </motion.div>
+          <motion.div
+            className="absolute top-32 left-[25%]"
+            animate={{ y: [0, -15, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Tag className="w-10 h-10 text-primary/20" />
+          </motion.div>
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center max-w-3xl mx-auto"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", delay: 0.2 }}
+              className="inline-block mb-6"
+            >
+              <div className="p-3 bg-primary/10 rounded-2xl backdrop-blur-sm">
+                <ShoppingCart className="w-12 h-12 text-primary" />
+              </div>
+            </motion.div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
               Pasar Tani Digital
             </h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+            
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Temukan hasil panen terbaik dan kebutuhan pertanian lengkap di sini
             </p>
-          </div>
-        </ParallaxWrapper>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex items-center justify-center gap-2 text-sm text-muted-foreground"
+            >
+              <ShoppingCart className="w-4 h-4 text-primary" />
+              <span>Belanja Mudah</span>
+              <span className="mx-2">•</span>
+              <Truck className="w-4 h-4 text-primary" />
+              <span>Pengiriman Cepat</span>
+              <span className="mx-2">•</span>
+              <Tag className="w-4 h-4 text-primary" />
+              <span>Harga Terbaik</span>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Rest of existing content */}
+      <div className="container mx-auto px-4">
+        {/* Hero Section */}
+
 
         {/* Search and Filter */}
         <div className="mb-12">

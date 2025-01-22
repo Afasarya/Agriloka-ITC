@@ -34,9 +34,10 @@ export interface LocationData {
 }
 
 export interface WeatherData {
-  temperature: number;
-  humidity: number;
-  rainfall: number;
+  temperature: string;
+  humidity: string;
+  rainfall: string;
+  forecast: string;
 }
 
 export interface RecommendedCrop {
@@ -53,7 +54,11 @@ export interface CropAnalysis {
   successRate: number;
   tips: string[];
   weatherConditions: WeatherData;
-  sources: SearchResult[];
+  sources: {
+    title: string;
+    link: string;
+    snippet: string;
+  }[];
   conclusion: {
     potentialSuccess: string;
     economicAnalysis: string;

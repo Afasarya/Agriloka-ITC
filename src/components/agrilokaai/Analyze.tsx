@@ -16,9 +16,34 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { AIService } from '@/services/ai';
-import { LocationData, CropAnalysis } from '@/types/ai';
+import { LocationData } from '@/types/ai';
 
-// ... existing imports and interfaces ...
+// Add WeatherData interface
+interface WeatherData {
+  temperature: string;
+  humidity: string;
+  rainfall: string;
+  forecast: string;
+}
+
+// Update CropAnalysis interface
+interface CropAnalysis {
+  suitableCrops: string[];
+  tips: string[];
+  weather?: WeatherData;
+  conclusion: {
+    potentialSuccess: string;
+    economicAnalysis: string;
+    mainRecommendations: string;
+    actionPlan: string;
+    sustainability: string;
+  };
+  sources: {
+    title: string;
+    link: string;
+    snippet: string;
+  }[];
+}
 
 export default function Analyze() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -39,6 +64,8 @@ export default function Analyze() {
     { id: 'tips', label: 'Tips', icon: Sprout },
     { id: 'conclusion', label: 'Kesimpulan', icon: CheckCircle2 },
   ];
+
+  
 
   // Fetch provinces on mount
   useEffect(() => {
@@ -110,12 +137,21 @@ export default function Analyze() {
       const result = await readerPromise;
       const base64Image = (result as string).split(',')[1];
       
-      const analysisResult = await AIService.analyzeImageWithLocation(
+      // Update the analysis section
+      const analysisResult = (await AIService.analyzeImageWithLocation(
         base64Image,
         selectedLocation
-      );
-      
-      setAnalysis(analysisResult);
+      )) as CropAnalysis & { weather?: WeatherData };
+
+      setAnalysis({
+        ...analysisResult,
+        weather: analysisResult.weather || {
+          temperature: '',
+          humidity: '',
+          rainfall: '',
+          forecast: ''
+        }
+      });
     } catch (err) {
       const message = err instanceof Error ? 
         err.message : 
@@ -369,7 +405,7 @@ export default function Analyze() {
                       className={`px-6 py-3 rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors ${
                         activeTab === tab.id
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted hover:bg-muted/80'
+                          : 'bg-muted hover:bg-muted/80 text-foreground dark:text-foreground/80'
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -380,7 +416,7 @@ export default function Analyze() {
               </div>
 
               {/* Tab Content */}
-              <div className="bg-card rounded-2xl border p-6 shadow-lg mb-8"> {/* Added mb-8 */}
+              <div className="bg-card border rounded-2xl p-6 shadow-lg dark:bg-background/50 dark:backdrop-blur-sm">
                 <AnimatePresence mode="wait">
                   {activeTab === 'crops' && (
                     <motion.div
@@ -390,23 +426,23 @@ export default function Analyze() {
                       exit={{ opacity: 0 }}
                       className="space-y-6"
                     >
-                      {/* Suitable Crops */}
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-4 flex items-center">
-                          <Leaf className="mr-2" /> {/* Changed from Plant to Leaf */}
-                          Tanaman yang Cocok
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {analysis.suitableCrops.map((crop, index) => (
-                            <div key={index} className="p-3 bg-green-50 rounded-lg">
-                              {crop}
-                            </div>
-                          ))}
-                        </div>
+                      <h3 className="text-xl font-semibold mb-4 flex items-center text-foreground">
+                        <Leaf className="mr-2 text-primary" />
+                        Tanaman yang Cocok
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {analysis.suitableCrops.map((crop, index) => (
+                          <div 
+                            key={index} 
+                            className="p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20 text-foreground"
+                          >
+                            {crop}
+                          </div>
+                        ))}
                       </div>
                     </motion.div>
                   )}
-                  
+
                   {activeTab === 'weather' && (
                     <motion.div
                       key="weather"
@@ -415,36 +451,27 @@ export default function Analyze() {
                       exit={{ opacity: 0 }}
                       className="space-y-6"
                     >
-                      {/* Weather Conditions */}
-                      <div className="mb-6">
-                        <h3 className="text-xl font-semibold mb-4 flex items-center">
-                          <ThermometerSun className="mr-2" />
-                          Kondisi Cuaca
-                        </h3>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="p-4 bg-blue-50 rounded-lg">
-                            <p className="text-sm text-gray-600">Suhu</p>
-                            <p className="text-lg font-semibold">
-                              {analysis.weatherConditions.temperature}°C
-                            </p>
-                          </div>
-                          <div className="p-4 bg-blue-50 rounded-lg">
-                            <p className="text-sm text-gray-600">Kelembaban</p>
-                            <p className="text-lg font-semibold">
-                              {analysis.weatherConditions.humidity}%
-                            </p>
-                          </div>
-                          <div className="p-4 bg-blue-50 rounded-lg">
-                            <p className="text-sm text-gray-600">Curah Hujan</p>
-                            <p className="text-lg font-semibold">
-                              {analysis.weatherConditions.rainfall} mm
-                            </p>
-                          </div>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                          <h4 className="font-medium text-foreground mb-2">Suhu</h4>
+                          <p className="text-muted-foreground">{analysis?.weather?.temperature}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                          <h4 className="font-medium text-foreground mb-2">Kelembaban</h4>
+                          <p className="text-muted-foreground">{analysis?.weather?.humidity}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                          <h4 className="font-medium text-foreground mb-2">Curah Hujan</h4>
+                          <p className="text-muted-foreground">{analysis?.weather?.rainfall}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                          <h4 className="font-medium text-foreground mb-2">Prakiraan</h4>
+                          <p className="text-muted-foreground">{analysis?.weather?.forecast}</p>
                         </div>
                       </div>
                     </motion.div>
                   )}
-                  
+
                   {activeTab === 'tips' && (
                     <motion.div
                       key="tips"
