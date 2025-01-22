@@ -16,34 +16,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { AIService } from '@/services/ai';
-import { LocationData } from '@/types/ai';
-
-// Add WeatherData interface
-interface WeatherData {
-  temperature: string;
-  humidity: string;
-  rainfall: string;
-  forecast: string;
-}
-
-// Update CropAnalysis interface
-interface CropAnalysis {
-  suitableCrops: string[];
-  tips: string[];
-  weather?: WeatherData;
-  conclusion: {
-    potentialSuccess: string;
-    economicAnalysis: string;
-    mainRecommendations: string;
-    actionPlan: string;
-    sustainability: string;
-  };
-  sources: {
-    title: string;
-    link: string;
-    snippet: string;
-  }[];
-}
+import { LocationData,  CropAnalysis } from '@/types/ai';
 
 export default function Analyze() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -138,20 +111,12 @@ export default function Analyze() {
       const base64Image = (result as string).split(',')[1];
       
       // Update the analysis section
-      const analysisResult = (await AIService.analyzeImageWithLocation(
+      const analysisResult = await AIService.analyzeImageWithLocation(
         base64Image,
         selectedLocation
-      )) as CropAnalysis & { weather?: WeatherData };
+      );
 
-      setAnalysis({
-        ...analysisResult,
-        weather: analysisResult.weather || {
-          temperature: '',
-          humidity: '',
-          rainfall: '',
-          forecast: ''
-        }
-      });
+      setAnalysis(analysisResult);
     } catch (err) {
       const message = err instanceof Error ? 
         err.message : 
@@ -168,7 +133,7 @@ export default function Analyze() {
       <div className="relative overflow-hidden bg-gradient-to-b from-primary/5 to-transparent py-24">
         {/* Background Elements */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+          <div className="absolute inset-0 bg-grid-pattern opacity:5" />
           
           {/* Animated Gradient Blobs */}
           <motion.div
@@ -452,21 +417,29 @@ export default function Analyze() {
                       className="space-y-6"
                     >
                       <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                        <div className="p-4 rounded-xl bg-card border shadow-sm">
                           <h4 className="font-medium text-foreground mb-2">Suhu</h4>
-                          <p className="text-muted-foreground">{analysis?.weather?.temperature}</p>
+                          <p className="text-2xl font-semibold text-foreground">
+                            {typeof analysis.weatherConditions.temperature === 'number' 
+                              ? `${analysis.weatherConditions.temperature}°C`
+                              : analysis.weatherConditions.temperature || 'N/A'}
+                          </p>
                         </div>
-                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                        <div className="p-4 rounded-xl bg-card border shadow-sm">
                           <h4 className="font-medium text-foreground mb-2">Kelembaban</h4>
-                          <p className="text-muted-foreground">{analysis?.weather?.humidity}</p>
+                          <p className="text-2xl font-semibold text-foreground">
+                            {typeof analysis.weatherConditions.humidity === 'number'
+                              ? `${analysis.weatherConditions.humidity}%`
+                              : analysis.weatherConditions.humidity || 'N/A'}
+                          </p>
                         </div>
-                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
+                        <div className="p-4 rounded-xl bg-card border shadow-sm">
                           <h4 className="font-medium text-foreground mb-2">Curah Hujan</h4>
-                          <p className="text-muted-foreground">{analysis?.weather?.rainfall}</p>
-                        </div>
-                        <div className="p-4 rounded-xl bg-background dark:bg-background/50 border">
-                          <h4 className="font-medium text-foreground mb-2">Prakiraan</h4>
-                          <p className="text-muted-foreground">{analysis?.weather?.forecast}</p>
+                          <p className="text-2xl font-semibold text-foreground">
+                            {typeof analysis.weatherConditions.rainfall === 'number'
+                              ? `${analysis.weatherConditions.rainfall} mm`
+                              : analysis.weatherConditions.rainfall || 'N/A'}
+                          </p>
                         </div>
                       </div>
                     </motion.div>
@@ -505,49 +478,49 @@ export default function Analyze() {
                     >
                       {/* Conclusion Section */}
                       <div className="mt-8">
-                        <h3 className="text-xl font-semibold mb-4">Kesimpulan</h3>
-                        <div className="p-4 bg-green-50 rounded-lg space-y-4">
+                        <h3 className="text-xl font-semibold mb-4 text-foreground">Kesimpulan</h3>
+                        <div className="p-4 bg-card/50 dark:bg-card/30 rounded-lg space-y-4 border shadow-sm">
                           <div>
-                            <h4 className="font-medium mb-2">Potensi Keberhasilan</h4>
-                            <p className="text-gray-700">{analysis.conclusion.potentialSuccess}</p>
+                            <h4 className="font-medium mb-2 text-foreground">Potensi Keberhasilan</h4>
+                            <p className="text-muted-foreground">{analysis.conclusion.potentialSuccess}</p>
                           </div>
                           <div>
-                            <h4 className="font-medium mb-2">Analisis Ekonomi</h4>
-                            <p className="text-gray-700">{analysis.conclusion.economicAnalysis}</p>
+                            <h4 className="font-medium mb-2 text-foreground">Analisis Ekonomi</h4>
+                            <p className="text-muted-foreground">{analysis.conclusion.economicAnalysis}</p>
                           </div>
                           <div>
-                            <h4 className="font-medium mb-2">Rekomendasi Utama</h4>
-                            <p className="text-gray-700">{analysis.conclusion.mainRecommendations}</p>
+                            <h4 className="font-medium mb-2 text-foreground">Rekomendasi Utama</h4>
+                            <p className="text-muted-foreground">{analysis.conclusion.mainRecommendations}</p>
                           </div>
                           <div>
-                            <h4 className="font-medium mb-2">Rencana Tindak Lanjut</h4>
-                            <p className="text-gray-700">{analysis.conclusion.actionPlan}</p>
+                            <h4 className="font-medium mb-2 text-foreground">Rencana Tindak Lanjut</h4>
+                            <p className="text-muted-foreground">{analysis.conclusion.actionPlan}</p>
                           </div>
                           <div>
-                            <h4 className="font-medium mb-2">Aspek Keberlanjutan</h4>
-                            <p className="text-gray-700">{analysis.conclusion.sustainability}</p>
+                            <h4 className="font-medium mb-2 text-foreground">Aspek Keberlanjutan</h4>
+                            <p className="text-muted-foreground">{analysis.conclusion.sustainability}</p>
                           </div>
                         </div>
                       </div>
 
-                      {/* Sources Section */}
+                      {/* Sources Section with dark mode support */}
                       <div className="mt-8">
-                        <h3 className="text-xl font-semibold mb-4 flex items-center">
+                        <h3 className="text-xl font-semibold mb-4 flex items-center text-foreground">
                           <Link2 className="mr-2" />
                           Sumber Data
                         </h3>
                         <div className="space-y-3">
                           {analysis.sources.map((source, index) => (
-                            <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                            <div key={index} className="p-4 bg-card/50 dark:bg-card/30 rounded-lg border shadow-sm">
                               <a 
                                 href={source.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 font-medium"
+                                className="text-primary hover:text-primary/80 font-medium"
                               >
                                 {source.title}
                               </a>
-                              <p className="text-sm text-gray-600 mt-1">{source.snippet}</p>
+                              <p className="text-sm text-muted-foreground mt-1">{source.snippet}</p>
                             </div>
                           ))}
                         </div>

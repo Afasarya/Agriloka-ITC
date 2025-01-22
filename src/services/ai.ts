@@ -386,14 +386,15 @@ Format jawaban dengan rapi menggunakan poin-poin.`
     };
   
     return {
-      suitableCrops: recommendedCrops.map(crop => crop.name),
+      suitableCrops: cropNamesFromResponse || defaultCrops.map(crop => crop.name),
       recommendedCrops,
       successRate,
       tips,
-      weatherConditions: {
-        temperature, // Use the improved temperature parsing
+      weatherConditions: {  // Make sure this matches the WeatherData interface
+        temperature,
         humidity: parseInt(response.match(/(?:kelembaban|humidity)[^0-9]*(\d+)/i)?.[1] || '75'),
-        rainfall: parseInt(response.match(/(?:curah hujan|rainfall)[^0-9]*(\d+)/i)?.[1] || '2000')
+        rainfall: parseInt(response.match(/(?:curah hujan|rainfall)[^0-9]*(\d+)/i)?.[1] || '2000'),
+        forecast: ''
       },
       sources,
       conclusion
