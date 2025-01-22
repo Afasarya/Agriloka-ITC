@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ToggleMode";
 import { useState, useEffect } from "react";
 import { ShoppingCart } from "lucide-react"; // Add this import
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -14,6 +14,7 @@ const navLinks = [
   { href: "/market", label: "Pasar" },
   { href: "/community", label: "Komunitas" },
   { href: "/education", label: "Edukasi" },
+  { href: "/analyze", label: "Smart Farming " },
 ];
 
 const navVariants = {
@@ -39,6 +40,7 @@ const menuVariants = {
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -98,7 +100,11 @@ export default function Navbar() {
               >
                 <Link 
                   href={link.href}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className={`transition-colors font-medium ${
+                    pathname === link.href 
+                      ? 'text-primary' 
+                      : 'text-foreground hover:text-primary'
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -192,18 +198,18 @@ export default function Navbar() {
               {/* Navigation Links */}
               <div className="space-y-4">
                 {navLinks.map((link) => (
-                  <motion.div
+                  <Link
                     key={link.href}
-                    whileTap={{ scale: 0.95 }}
+                    href={link.href}
+                    className={`block py-2 transition-colors font-medium ${
+                      pathname === link.href 
+                        ? 'text-primary' 
+                        : 'text-foreground hover:text-primary'
+                    }`}
+                    onClick={() => setIsOpen(false)}
                   >
-                    <Link 
-                      href={link.href}
-                      className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.div>
+                    {link.label}
+                  </Link>
                 ))}
               </div>
 
