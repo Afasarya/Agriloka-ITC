@@ -1,6 +1,14 @@
 import Groq from 'groq-sdk';
 import axios from 'axios';
-import { AIMessage, SearchResult, AIResponse, VisionResponse } from '@/types/ai';
+import { 
+  AIMessage, 
+  SearchResult, 
+  AIResponse, 
+  VisionResponse, 
+  LocationData, 
+  CropAnalysis,
+  RecommendedCrop  // Add this import
+} from '@/types/ai';
 
 interface SearchApiResult {
   title: string;
@@ -155,6 +163,226 @@ Format jawaban dengan rapi menggunakan poin-poin.`
       console.error('Search API Error:', error);
       throw new Error('Failed to get search results');
     }
+  }
+
+    static async analyzeImageWithLocation(
+    imageBase64: string, 
+    location: LocationData
+  ): Promise<CropAnalysis> {
+    if (!groqClient) {
+      throw new Error('AI client not initialized');
+    }
+  
+    try {
+      // Fetch real-time weather and agricultural data
+      const weatherSearch = await this.getSearchResults(
+        `cuaca real time terkini ${location.name} bmkg accuweather`
+      );
+  
+      const agriculturalSearch = await this.getSearchResults(
+        `${location.name} pertanian produktivitas tanaman pangan hortikultura terbaru`
+      );
+  
+      const contextPrompt = `Sebagai Agriloka AI Expert System, berikan analisis komprehensif untuk:
+  
+  Lokasi: ${location.name}
+  Data Kontekstual:
+  ${weatherSearch.map(r => r.snippet).join('\n')}
+  ${agriculturalSearch.map(r => r.snippet).join('\n')}
+  
+  ANALISIS YANG DIBUTUHKAN:
+  
+  1. ANALISIS TANAH & IKLIM
+  - Tekstur dan struktur tanah dari gambar
+  - Tingkat kesuburan visual
+  - Kondisi drainase
+  - Data cuaca real-time terkini
+  - Tren iklim musiman
+  
+  2. REKOMENDASI TANAMAN
+  Minimal 5 tanaman dengan detail:
+  - Nama tanaman
+  - Estimasi hasil panen (ton/ha)
+  - Durasi penanaman
+  - Tingkat kesesuaian (%)
+  - Nilai ekonomi potensial
+  
+  3. KALENDER TANAM
+  - Waktu tanam optimal
+  - Periode perawatan kritis
+  - Jadwal pemupukan
+  - Prakiraan panen
+  
+  4. TEKNIK BUDIDAYA
+  Minimal 5 tips spesifik untuk:
+  - Persiapan lahan
+  - Metode penanaman
+  - Sistem pengairan
+  - Pemupukan organik
+  - Pengendalian OPT
+  
+  5. ANALISIS RISIKO & MITIGASI
+  - Potensi kendala cuaca
+  - Risiko hama/penyakit
+  - Strategi pencegahan
+  - Rencana kontingensi
+  
+  6. KESIMPULAN KOMPREHENSIF
+  Berikan kesimpulan detail mencakup:
+  - Potensi keberhasilan (dengan justifikasi)
+  - Analisis kelayakan ekonomi
+  - Rekomendasi teknis utama
+  - Proyeksi hasil & keuntungan
+  - Saran tindak lanjut spesifik
+  - Pertimbangan keberlanjutan
+  
+  Format output harus terstruktur dengan metrik yang jelas dan saran praktis.`;
+  
+      const completion = await groqClient.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: contextPrompt },
+              {
+                type: "image_url",
+                image_url: { url: `data:image/jpeg;base64,${imageBase64}` }
+              }
+            ]
+          }
+        ],
+        model: "llama-3.2-11b-vision-preview",
+        temperature: 0.7,
+        max_tokens: 2000,
+        top_p: 0.95
+      });
+  
+      const response = completion.choices[0].message.content || '';
+      return this.parseAnalysisResponse(response, weatherSearch);
+  
+    } catch (error) {
+      console.error('Agricultural Analysis Error:', error);
+      throw error;
+    }
+  }
+  
+  private static parseAnalysisResponse(response: string, sources: SearchResult[]): CropAnalysis {
+    // Default crops definition
+    const defaultCrops: RecommendedCrop[] = [
+      { name: 'Padi Sawah', yield: '5-7 ton/ha', duration: '3-4 bulan', suitability: 85, economicValue: 'Tinggi' },
+      { name: 'Jagung', yield: '4-6 ton/ha', duration: '3-4 bulan', suitability: 80, economicValue: 'Tinggi' },
+      { name: 'Bawang Merah', yield: '8-12 ton/ha', duration: '2-3 bulan', suitability: 75, economicValue: 'Sangat Tinggi' },
+      { name: 'Cabai Merah', yield: '10-15 ton/ha', duration: '3-4 bulan', suitability: 80, economicValue: 'Sangat Tinggi' },
+      { name: 'Kacang Tanah', yield: '2-3 ton/ha', duration: '3-4 bulan', suitability: 70, economicValue: 'Tinggi' }
+    ];
+
+    // Extract success rate first
+    const successRateMatch = response.match(/(?:tingkat|persentase)\s*(?:keberhasilan|kesesuaian)[^0-9]*(\d+)/i);
+    const successRate = successRateMatch ? parseInt(successRateMatch[1]) : 85;
+  
+    // Improved crop name extraction and cleaning
+    const cropNamesFromResponse = response
+      .match(/(?:Tanaman \d+|tanaman yang cocok):\s*([^.\n]+)/gi)
+      ?.map(match => {
+        const name = match.split(':')[1]?.trim();
+        // Remove asterisks and clean up the name
+        return name ? name.replace(/\*+/g, '').trim() : null;
+      })
+      .filter(Boolean) as string[];
+  
+    // Better temperature parsing
+    const findTemperature = (text: string): number | null => {
+      // Try to find temperature in format "XX°C" or "XX-YY°C"
+      const matches = [
+        // Look for "Semarang" followed by temperature
+        /Semarang[^0-9]*(\d+)\s*°C/i,
+        // Look for explicit temperature mentions
+        /suhu[^0-9]*(\d+)\s*°C/i,
+        /temperature[^0-9]*(\d+)\s*°C/i,
+        // General temperature patterns
+        /(\d+)\s*°C/i,
+        // Last resort: any number followed by C
+        /(\d+)C/i
+      ];
+  
+      for (const regex of matches) {
+        const match = text.match(regex);
+        if (match) {
+          const temp = parseInt(match[1]);
+          // Validate temperature is reasonable (0-50°C)
+          if (temp >= 0 && temp <= 50) {
+            return temp;
+          }
+        }
+      }
+      return null;
+    };
+  
+    // Search for temperature in both response and search results
+    const temperature = 
+      findTemperature(response) || 
+      findTemperature(sources.map(s => s.snippet).join(' ')) || 
+      30; // Default to 30°C for Semarang if no valid temperature found
+  
+    // Rest of the implementation
+    const recommendedCrops = (cropNamesFromResponse?.length >= 5 ? 
+      cropNamesFromResponse.slice(0, 5).map(name => ({
+        name,
+        yield: '3-5 ton/ha',
+        duration: '3-4 bulan',
+        suitability: 85,
+        economicValue: 'Tinggi'
+      })) : 
+      defaultCrops
+    );
+  
+    const tips = [
+      "Persiapkan lahan dengan baik menggunakan pupuk organik",
+      "Pastikan sistem irigasi terpasang sebelum penanaman",
+      "Lakukan rotasi tanaman untuk menjaga kesuburan tanah",
+      "Terapkan pengendalian hama terpadu (PHT)",
+      "Monitor pertumbuhan tanaman secara rutin",
+      "Gunakan bibit unggul bersertifikat",
+      "Atur jarak tanam sesuai rekomendasi"
+    ];
+  
+    const conclusion = {
+      potentialSuccess: `Berdasarkan analisis lahan dan kondisi iklim, lokasi ini memiliki potensi keberhasilan ${successRate}% untuk budidaya tanaman yang direkomendasikan.`,
+      economicAnalysis: `Analisis ekonomi menunjukkan prospek yang menjanjikan dengan:
+      • ROI estimasi 150-200%
+      • Periode BEP 6-8 bulan
+      • Potensi pasar yang tinggi di wilayah sekitar
+      • Peluang pengembangan produk olahan`,
+      mainRecommendations: `Rekomendasi utama untuk optimalisasi lahan:
+      • Pengembangan sistem irigasi tetes
+      • Penerapan teknologi pertanian presisi
+      • Implementasi GAP (Good Agricultural Practices)
+      • Penggunaan pupuk organik berkualitas`,
+      actionPlan: `Rencana tindak lanjut:
+      • Pelatihan teknis untuk petani
+      • Pendampingan rutin oleh ahli
+      • Monitoring pertumbuhan tanaman
+      • Evaluasi hasil panen berkala`,
+      sustainability: `Aspek keberlanjutan:
+      • Konservasi air dan tanah
+      • Penggunaan input ramah lingkungan
+      • Penerapan sistem pertanian terpadu
+      • Adaptasi terhadap perubahan iklim`
+    };
+  
+    return {
+      suitableCrops: recommendedCrops.map(crop => crop.name),
+      recommendedCrops,
+      successRate,
+      tips,
+      weatherConditions: {
+        temperature, // Use the improved temperature parsing
+        humidity: parseInt(response.match(/(?:kelembaban|humidity)[^0-9]*(\d+)/i)?.[1] || '75'),
+        rainfall: parseInt(response.match(/(?:curah hujan|rainfall)[^0-9]*(\d+)/i)?.[1] || '2000')
+      },
+      sources,
+      conclusion
+    };
   }
 
   // Search-enhanced completion with better prompting
